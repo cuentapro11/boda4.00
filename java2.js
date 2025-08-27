@@ -118,7 +118,32 @@ function initializeHeroParallax() {
     window.addEventListener('touchmove', onScroll, { passive: true });
     window.addEventListener('orientationchange', render);
     window.addEventListener('pageshow', render);
-    mqMobile.addEventListener?.('change', render);
+    if (mqMobile && mqMobile.addEventListener) {
+        mqMobile.addEventListener('change', render);
+    }
+
+    // Asegura actualización incluso si el scroll es en un contenedor (no window)
+    let animating = false;
+    const tick = () => {
+        if (!animating) return;
+        render();
+        requestAnimationFrame(tick);
+    };
+    if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    if (!animating) {
+                        animating = true;
+                        requestAnimationFrame(tick);
+                    }
+                } else {
+                    animating = false;
+                }
+            });
+        }, { threshold: 0.01 });
+        io.observe(heroLeft);
+    }
 }
 
 // Cargar la API de YouTube
