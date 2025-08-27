@@ -346,7 +346,11 @@ function initializeCarousel() {
     };
 
     nextBtn && nextBtn.addEventListener('click', goNext);
-    prevBtn && prevBtn.addEventListener('click', goPrev);
+    // Desactivar avance hacia atrás si se requiere solo un sentido
+    if (prevBtn) {
+        prevBtn.style.display = 'none';
+        prevBtn.disabled = true;
+    }
 
     // Auto-play
     setInterval(goNext, 4000);
