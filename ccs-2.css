@@ -1688,7 +1688,7 @@ html, body { overflow-x: hidden; }
   .hero-split { height: auto !important; }
   .hero-left { height: 50vh !important; }
   .hero-left img { object-fit: cover; object-position: center; }
-  .hero-left-bg { height: 120%; }
+  .hero-left-bg { height: 150%; }
   .hero-right { height: 85vh !important; }
 }
 

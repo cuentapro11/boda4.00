@@ -55,7 +55,7 @@ function initializeHeroParallax() {
     let lastScrollY = window.scrollY || window.pageYOffset;
     let ticking = false;
 
-    const computeSpeed = () => (mqMobile.matches ? 0.3 : 0.15);
+    const computeSpeed = () => (mqMobile.matches ? 0.35 : 0.2);
 
     const render = () => {
         if (prefersReducedMotion.matches) {
@@ -66,22 +66,23 @@ function initializeHeroParallax() {
 
         const rect = heroLeft.getBoundingClientRect();
         const viewportH = window.innerHeight || document.documentElement.clientHeight;
+        const scrollY = window.scrollY || window.pageYOffset;
+        const containerTop = rect.top + scrollY;
+        const containerHeight = rect.height;
 
         // Solo mover cuando está en viewport
-        if (rect.bottom <= 0 || rect.top >= viewportH) {
+        if ((scrollY + viewportH) <= containerTop || scrollY >= (containerTop + containerHeight)) {
             heroLayer.style.transform = 'translate3d(0,0,0)';
             ticking = false;
             return;
         }
 
-        // Progreso de visibilidad [0..1] donde 0 es al entrar y 1 cuando el top llega al borde superior
-        const enterPoint = viewportH; // cuando el bottom cruza 0 empieza a entrar
-        const progress = Math.min(1, Math.max(0, 1 - rect.top / viewportH));
-
         const speed = computeSpeed();
-        const maxTravel = rect.height * 0.2; // 20% de recorrido máximo
-        const translate = progress * maxTravel * (mqMobile.matches ? 1 : 1);
-        heroLayer.style.transform = `translate3d(0, ${Math.round(translate)}px, 0)`;
+        const relative = scrollY - containerTop; // cuánto hemos avanzado desde el inicio del contenedor
+        const maxTravel = containerHeight * (mqMobile.matches ? 0.4 : 0.25); // más recorrido en móvil
+        const clamped = Math.max(0, Math.min(maxTravel, relative * speed));
+
+        heroLayer.style.transform = `translate3d(0, ${Math.round(clamped)}px, 0)`;
 
         ticking = false;
     };
