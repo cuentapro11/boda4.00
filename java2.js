@@ -283,12 +283,12 @@ function initializeCarousel() {
     const currentSlideElement = document.getElementById('currentSlide');
     const totalSlidesElement = document.getElementById('totalSlides');
 
-    const items = track ? track.querySelectorAll('.carousel-item') : [];
-    totalSlides = items.length;
-    if (totalSlides > 0) {
-        const totalSlidesElementSafe = document.getElementById('totalSlides');
-        if (totalSlidesElementSafe) totalSlidesElementSafe.textContent = totalSlides;
-    }
+    if (!track) return;
+    if (track.dataset.loopInit === '1') return; // evitar doble init
+
+    const originalItems = Array.from(track.querySelectorAll('.carousel-item'));
+    const originalCount = originalItems.length;
+    if (originalCount === 0) return;
 
     function getVisibleSlides() {
         if (window.innerWidth <= 768) return 1;
@@ -297,66 +297,92 @@ function initializeCarousel() {
     }
 
     let visibleSlides = getVisibleSlides();
-    let maxIndex = Math.max(0, totalSlides - visibleSlides);
+    totalSlides = originalCount; // para el contador mostrado
+    if (totalSlidesElement) totalSlidesElement.textContent = String(totalSlides);
 
-    totalSlidesElement.textContent = totalSlides;
-    updateSlideCounter();
+    // Clonar extremos para loop infinito suave
+    const prependClones = originalItems.slice(-visibleSlides).map(n => n.cloneNode(true));
+    const appendClones = originalItems.slice(0, visibleSlides).map(n => n.cloneNode(true));
+    prependClones.forEach(n => track.insertBefore(n, track.firstChild));
+    appendClones.forEach(n => track.appendChild(n));
 
-    prevBtn.addEventListener('click', () => {
-        if (currentSlide > 0) {
-            currentSlide--;
-        } else {
-            currentSlide = maxIndex;
+    // Estado del índice en espacio extendido
+    let index = visibleSlides; // primer original
+    const setTransition = (enabled) => {
+        track.style.transition = enabled ? 'transform 0.5s ease-in-out' : 'none';
+    };
+    const perSlidePercent = () => 100 / visibleSlides;
+    const translateTo = () => {
+        const translateX = -(index) * perSlidePercent();
+        track.style.transform = `translateX(${translateX}%)`;
+    };
+
+    // Primera posición (sin animación)
+    setTransition(false);
+    translateTo();
+    requestAnimationFrame(() => setTransition(true));
+
+    const updateCounter = () => {
+        const logical = ((index - visibleSlides) % originalCount + originalCount) % originalCount; // 0..originalCount-1
+        if (currentSlideElement) currentSlideElement.textContent = String(logical + 1);
+    };
+    updateCounter();
+
+    const goNext = () => {
+        index += 1;
+        setTransition(true);
+        translateTo();
+    };
+    const goPrev = () => {
+        index -= 1;
+        setTransition(true);
+        translateTo();
+    };
+
+    nextBtn && nextBtn.addEventListener('click', goNext);
+    prevBtn && prevBtn.addEventListener('click', goPrev);
+
+    // Auto-play
+    setInterval(goNext, 4000);
+
+    // Snap en bordes de clones
+    track.addEventListener('transitionend', () => {
+        const totalExtended = originalCount + 2 * visibleSlides;
+        if (index >= originalCount + visibleSlides) {
+            // Pasó al bloque clonado del final -> volver al primer original
+            setTransition(false);
+            index = visibleSlides;
+            translateTo();
+            requestAnimationFrame(() => setTransition(true));
+        } else if (index < visibleSlides) {
+            // Pasó al bloque clonado del inicio -> ir al último original
+            setTransition(false);
+            index = originalCount + visibleSlides - 1;
+            translateTo();
+            requestAnimationFrame(() => setTransition(true));
         }
-        updateCarousel(visibleSlides);
+        updateCounter();
     });
 
-    nextBtn.addEventListener('click', () => {
-        if (currentSlide < maxIndex) {
-            currentSlide++;
-        } else {
-            currentSlide = 0;
-        }
-        updateCarousel(visibleSlides);
-    });
-
-    // Auto-play del carrusel
-    setInterval(() => {
-        if (currentSlide < maxIndex) {
-            currentSlide++;
-        } else {
-            currentSlide = 0;
-        }
-        updateCarousel(visibleSlides);
-    }, 4000);
-
-    // Recalcular en resize
+    // Reinit básico en resize (reconstruir clones)
     window.addEventListener('resize', () => {
         const newVisible = getVisibleSlides();
-        if (newVisible !== visibleSlides) {
-            visibleSlides = newVisible;
-            maxIndex = Math.max(0, totalSlides - visibleSlides);
-            currentSlide = Math.min(currentSlide, maxIndex);
-            updateCarousel(visibleSlides);
-        }
-    });
+        if (newVisible === visibleSlides) return;
+        // Reset: limpiar y reconstruir
+        setTransition(false);
+        // Eliminar todos los hijos
+        track.innerHTML = '';
+        // Reagregar solo originales
+        originalItems.forEach(n => track.appendChild(n));
+        track.dataset.loopInit = '';
+        // Re-inicializar
+        initializeCarousel();
+    }, { passive: true });
+
+    track.dataset.loopInit = '1';
 }
 
-function updateCarousel(visibleSlides = 3) {
-    const track = document.getElementById('carouselTrack');
-    const perSlidePercent = 100 / visibleSlides;
-    // En modo circular, currentSlide envuelve entre 0 y (totalSlides - 1)
-    if (currentSlide >= totalSlides) currentSlide = 0;
-    if (currentSlide < 0) currentSlide = totalSlides - 1;
-    const translateX = -currentSlide * perSlidePercent;
-    track.style.transform = `translateX(${translateX}%)`;
-    updateSlideCounter();
-}
-
-function updateSlideCounter() {
-    const currentSlideElement = document.getElementById('currentSlide');
-    currentSlideElement.textContent = currentSlide + 1;
-}
+// Las funciones updateCarousel y updateSlideCounter ya no se usan en el bucle infinito
 
 // Funciones de los botones
 function openLocation(location) {
