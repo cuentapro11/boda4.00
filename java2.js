@@ -285,6 +285,10 @@ function initializeCarousel() {
 
     const items = track ? track.querySelectorAll('.carousel-item') : [];
     totalSlides = items.length;
+    if (totalSlides > 0) {
+        const totalSlidesElementSafe = document.getElementById('totalSlides');
+        if (totalSlidesElementSafe) totalSlidesElementSafe.textContent = totalSlides;
+    }
 
     function getVisibleSlides() {
         if (window.innerWidth <= 768) return 1;
@@ -341,6 +345,9 @@ function initializeCarousel() {
 function updateCarousel(visibleSlides = 3) {
     const track = document.getElementById('carouselTrack');
     const perSlidePercent = 100 / visibleSlides;
+    // En modo circular, currentSlide envuelve entre 0 y (totalSlides - 1)
+    if (currentSlide >= totalSlides) currentSlide = 0;
+    if (currentSlide < 0) currentSlide = totalSlides - 1;
     const translateX = -currentSlide * perSlidePercent;
     track.style.transform = `translateX(${translateX}%)`;
     updateSlideCounter();
