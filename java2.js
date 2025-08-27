@@ -6,7 +6,7 @@ let totalSlides = 0;
 let enableMusic = false;
 
 // Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', function() {
+function initializeApp() {
     initializeCountdown();
     initializeCarousel();
     initializeModal();
@@ -19,7 +19,13 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.style.display = 'none';
         }
     }, 10000);
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
 
 // Modal de bienvenida
 function initializeModal() {
@@ -27,19 +33,41 @@ function initializeModal() {
     const enterWithoutMusic = document.getElementById('enterWithoutMusic');
     const modal = document.getElementById('welcomeModal');
 
-    enterWithMusic.addEventListener('click', function() {
-        enableMusic = true;
-        modal.style.display = 'none';
-        if (window.YT && window.YT.Player) {
-            initializeYouTubePlayer();
-        } else {
-            loadYouTubeAPI();
-        }
-    });
+    if (enterWithMusic) {
+        enterWithMusic.addEventListener('click', function() {
+            enableMusic = true;
+            modal.style.display = 'none';
+            if (window.YT && window.YT.Player) {
+                initializeYouTubePlayer();
+            } else {
+                loadYouTubeAPI();
+            }
+        });
+    }
 
-    enterWithoutMusic.addEventListener('click', function() {
-        enableMusic = false;
-        modal.style.display = 'none';
+    if (enterWithoutMusic) {
+        enterWithoutMusic.addEventListener('click', function() {
+            enableMusic = false;
+            modal.style.display = 'none';
+        });
+    }
+
+    // Fallback por delegación (por si los listeners directos no se adjuntan)
+    document.addEventListener('click', function(evt) {
+        const withBtn = evt.target.closest && evt.target.closest('#enterWithMusic');
+        const withoutBtn = evt.target.closest && evt.target.closest('#enterWithoutMusic');
+        if (withBtn && modal) {
+            enableMusic = true;
+            modal.style.display = 'none';
+            if (window.YT && window.YT.Player) {
+                initializeYouTubePlayer();
+            } else {
+                loadYouTubeAPI();
+            }
+        } else if (withoutBtn && modal) {
+            enableMusic = false;
+            modal.style.display = 'none';
+        }
     });
 }
 
