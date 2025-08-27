@@ -320,15 +320,24 @@ body {
     background: transparent; /* sin fondo para igualar el blanco */
 }
 
-/* Lado izquierdo: imagen fija con efecto scroll (parallax) */
+/* Lado izquierdo: contenedor del parallax */
 .hero-left {
 	position: relative;
-	/* use right image here with fallback */
+	overflow: hidden;
+}
+
+/* Capa de fondo que se mueve con el scroll */
+.hero-left-bg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 140%;
 	background-image: url('hero-left.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-position: center top;
-	background-attachment: scroll;
+	transform: translateY(0);
+	will-change: transform;
 }
 
 /* Lado derecho: sin efecto, solo imagen estática */
@@ -866,7 +875,6 @@ body {
 /* Responsive */
 @media (max-width: 1024px) {
     .hero-split { grid-template-columns: 1fr; height: 60vh; }
-    .hero-left { background-size: contain; background-position: center top; }
 }
 
 @media (max-width: 768px) {
@@ -1678,8 +1686,9 @@ html, body { overflow-x: hidden; }
 .hero-wrapper { padding-top: 0 !important; padding-bottom: 0 !important; }
 @media (max-width: 768px) {
   .hero-split { height: auto !important; }
-  .hero-left { height: 50vh !important; background-position: center; }
+  .hero-left { height: 50vh !important; }
   .hero-left img { object-fit: cover; object-position: center; }
+  .hero-left-bg { height: 120%; }
   .hero-right { height: 85vh !important; }
 }
 
