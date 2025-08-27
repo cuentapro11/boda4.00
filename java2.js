@@ -86,11 +86,7 @@ function initializeHeroParallax() {
     const computeSpeed = () => (mqMobile.matches ? 0.35 : 0.2);
 
     const render = () => {
-        if (prefersReducedMotion.matches) {
-            heroLayer.style.transform = 'translate3d(0,0,0)';
-            ticking = false;
-            return;
-        }
+        const reduce = prefersReducedMotion.matches;
 
         const rect = heroLeft.getBoundingClientRect();
         const viewportH = window.innerHeight || document.documentElement.clientHeight;
@@ -99,7 +95,7 @@ function initializeHeroParallax() {
         // En móvil, mover relativo a la posición del contenedor en viewport
         if (mqMobile.matches) {
             const relativeY = -rect.top; // 0 cuando el top está en el borde superior
-            const mobileSpeed = 0.45; // ligeramente más visible
+            const mobileSpeed = reduce ? 0.2 : 0.45; // respeta reduce con menor velocidad
             const translate = Math.round(relativeY * mobileSpeed);
             heroLayer.style.transform = `translate3d(0, ${translate}px, 0)`;
             ticking = false;
@@ -114,7 +110,7 @@ function initializeHeroParallax() {
             ticking = false;
             return;
         }
-        const speed = computeSpeed();
+        const speed = reduce ? computeSpeed() * 0.5 : computeSpeed();
         const relative = scrollY - containerTop;
         const maxTravel = containerHeight * 0.25;
         const clamped = Math.max(0, Math.min(maxTravel, relative * speed));
@@ -134,6 +130,9 @@ function initializeHeroParallax() {
     render();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', render);
+    window.addEventListener('touchmove', onScroll, { passive: true });
+    window.addEventListener('orientationchange', render);
+    window.addEventListener('pageshow', render);
     mqMobile.addEventListener?.('change', render);
 }
 
