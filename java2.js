@@ -87,34 +87,19 @@ function initializeHeroParallax() {
 
     const render = () => {
         const reduce = prefersReducedMotion.matches;
-
         const rect = heroLeft.getBoundingClientRect();
+        const layerHeight = heroLayer.offsetHeight || rect.height * 1.5;
         const viewportH = window.innerHeight || document.documentElement.clientHeight;
-        const scrollY = window.scrollY || window.pageYOffset;
 
-        // En móvil, mover relativo a la posición del contenedor en viewport
-        if (mqMobile.matches) {
-            const relativeY = -rect.top; // 0 cuando el top está en el borde superior
-            const mobileSpeed = reduce ? 0.2 : 0.45; // respeta reduce con menor velocidad
-            const translate = Math.round(relativeY * mobileSpeed);
-            heroLayer.style.transform = `translate3d(0, ${translate}px, 0)`;
-            ticking = false;
-            return;
-        }
-
-        // En desktop, relativo al contenedor
-        const containerTop = rect.top + scrollY;
-        const containerHeight = rect.height;
-        if ((scrollY + viewportH) <= containerTop || scrollY >= (containerTop + containerHeight)) {
-            heroLayer.style.transform = 'translate3d(0,0,0)';
-            ticking = false;
-            return;
-        }
-        const speed = reduce ? computeSpeed() * 0.5 : computeSpeed();
-        const relative = scrollY - containerTop;
-        const maxTravel = containerHeight * 0.25;
-        const clamped = Math.max(0, Math.min(maxTravel, relative * speed));
-        heroLayer.style.transform = `translate3d(0, ${Math.round(clamped)}px, 0)`;
+        // Unificado: usa rect.top para todas las vistas
+        const relativeY = -rect.top; // 0 cuando top toca el borde superior
+        const baseSpeed = mqMobile.matches ? 0.45 : 0.2;
+        const speed = reduce ? baseSpeed * 0.5 : baseSpeed;
+        // Limita el recorrido a un porcentaje de la capa para evitar huecos
+        const maxTravel = Math.min(layerHeight * 0.5, rect.height * 0.5);
+        const translateRaw = relativeY * speed;
+        const translate = Math.max(0, Math.min(maxTravel, translateRaw));
+        heroLayer.style.transform = `translate3d(0, ${Math.round(translate)}px, 0)`;
 
         ticking = false;
     };
