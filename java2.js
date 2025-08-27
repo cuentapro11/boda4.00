@@ -96,10 +96,12 @@ function initializeHeroParallax() {
         const viewportH = window.innerHeight || document.documentElement.clientHeight;
         const scrollY = window.scrollY || window.pageYOffset;
 
-        // En móvil, usar desplazamiento directo para mayor visibilidad
+        // En móvil, mover relativo a la posición del contenedor en viewport
         if (mqMobile.matches) {
-            const mobileSpeed = 0.4; // más visible en móvil
-            heroLayer.style.transform = `translate3d(0, ${Math.round(scrollY * mobileSpeed)}px, 0)`;
+            const relativeY = -rect.top; // 0 cuando el top está en el borde superior
+            const mobileSpeed = 0.45; // ligeramente más visible
+            const translate = Math.round(relativeY * mobileSpeed);
+            heroLayer.style.transform = `translate3d(0, ${translate}px, 0)`;
             ticking = false;
             return;
         }
