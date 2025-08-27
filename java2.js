@@ -301,8 +301,10 @@ function initializeCarousel() {
     if (totalSlidesElement) totalSlidesElement.textContent = String(totalSlides);
 
     // Clonar extremos para loop infinito suave
-    const prependClones = originalItems.slice(-visibleSlides).map(n => n.cloneNode(true));
-    const appendClones = originalItems.slice(0, visibleSlides).map(n => n.cloneNode(true));
+    // Para evitar huecos tras la 5ª imagen en layouts 3/2 visibles, clonar al menos visibleSlides+1
+    const cloneCount = visibleSlides + 1;
+    const prependClones = originalItems.slice(-cloneCount).map(n => n.cloneNode(true));
+    const appendClones = originalItems.slice(0, cloneCount).map(n => n.cloneNode(true));
     prependClones.forEach(n => track.insertBefore(n, track.firstChild));
     appendClones.forEach(n => track.appendChild(n));
 
