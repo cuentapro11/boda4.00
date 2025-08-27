@@ -50,19 +50,39 @@ function initializeHeroParallax() {
     if (!heroLeft || !heroLayer) return;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mqMobile = window.matchMedia('(max-width: 768px)');
 
     let lastScrollY = window.scrollY || window.pageYOffset;
     let ticking = false;
 
-    const computeSpeed = () => (window.innerWidth <= 768 ? 0.65 : 0.5);
+    const computeSpeed = () => (mqMobile.matches ? 0.3 : 0.15);
 
     const render = () => {
         if (prefersReducedMotion.matches) {
             heroLayer.style.transform = 'translate3d(0,0,0)';
-        } else {
-            const speed = computeSpeed();
-            heroLayer.style.transform = `translate3d(0, ${Math.round(lastScrollY * speed)}px, 0)`;
+            ticking = false;
+            return;
         }
+
+        const rect = heroLeft.getBoundingClientRect();
+        const viewportH = window.innerHeight || document.documentElement.clientHeight;
+
+        // Solo mover cuando está en viewport
+        if (rect.bottom <= 0 || rect.top >= viewportH) {
+            heroLayer.style.transform = 'translate3d(0,0,0)';
+            ticking = false;
+            return;
+        }
+
+        // Progreso de visibilidad [0..1] donde 0 es al entrar y 1 cuando el top llega al borde superior
+        const enterPoint = viewportH; // cuando el bottom cruza 0 empieza a entrar
+        const progress = Math.min(1, Math.max(0, 1 - rect.top / viewportH));
+
+        const speed = computeSpeed();
+        const maxTravel = rect.height * 0.2; // 20% de recorrido máximo
+        const translate = progress * maxTravel * (mqMobile.matches ? 1 : 1);
+        heroLayer.style.transform = `translate3d(0, ${Math.round(translate)}px, 0)`;
+
         ticking = false;
     };
 
@@ -77,6 +97,7 @@ function initializeHeroParallax() {
     render();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', render);
+    mqMobile.addEventListener?.('change', render);
 }
 
 // Cargar la API de YouTube
