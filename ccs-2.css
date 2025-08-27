@@ -652,6 +652,7 @@ body {
     display: flex;
     transition: transform 0.5s ease-in-out;
     gap: 0; /* evitar huecos */
+    justify-content: flex-start !important; /* evitar centrado que genera huecos */
 }
 
 /* Ornamentos internos del carrusel */
@@ -663,6 +664,7 @@ body {
     flex: 0 0 33.333%; /* 3 en desktop */
     max-width: 33.333%;
     height: 400px;
+    box-sizing: border-box; /* que el borde no sume al ancho */
 }
 @media (max-width: 1024px) {
   .carousel-item { flex: 0 0 50%; max-width: 50%; }
@@ -670,6 +672,10 @@ body {
 @media (max-width: 768px) {
   .carousel-item { flex: 0 0 100%; max-width: 100%; }
 }
+
+/* Forzar reglas dentro de la galería (algunas tenían !important con centrado) */
+.gallery-section .carousel-track { gap: 0 !important; justify-content: flex-start !important; }
+.gallery-section .carousel-track-container { padding-left: 0 !important; padding-right: 0 !important; }
 
 .carousel-item img {
     width: 100%;

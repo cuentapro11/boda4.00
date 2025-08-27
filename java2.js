@@ -308,8 +308,10 @@ function initializeCarousel() {
 
     // Estado del índice en espacio extendido
     let index = visibleSlides; // primer original
+    let isTransitioning = false;
     const setTransition = (enabled) => {
         track.style.transition = enabled ? 'transform 0.5s ease-in-out' : 'none';
+        isTransitioning = enabled;
     };
     const perSlidePercent = () => 100 / visibleSlides;
     const translateTo = () => {
@@ -329,11 +331,13 @@ function initializeCarousel() {
     updateCounter();
 
     const goNext = () => {
+        if (isTransitioning) return;
         index += 1;
         setTransition(true);
         translateTo();
     };
     const goPrev = () => {
+        if (isTransitioning) return;
         index -= 1;
         setTransition(true);
         translateTo();
@@ -347,6 +351,7 @@ function initializeCarousel() {
 
     // Snap en bordes de clones
     track.addEventListener('transitionend', () => {
+        isTransitioning = false;
         const totalExtended = originalCount + 2 * visibleSlides;
         if (index >= originalCount + visibleSlides) {
             // Pasó al bloque clonado del final -> volver al primer original
