@@ -50,19 +50,60 @@ function initializeHeroParallax() {
     if (!heroLeft || !heroLayer) return;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+<<<<<<< HEAD
+=======
+    const mqMobile = window.matchMedia('(max-width: 768px)');
+>>>>>>> cursor/ajustar-parallax-izquierdo-en-movil-5f1e
 
     let lastScrollY = window.scrollY || window.pageYOffset;
     let ticking = false;
 
+<<<<<<< HEAD
     const computeSpeed = () => (window.innerWidth <= 768 ? 0.65 : 0.5);
+=======
+    const computeSpeed = () => (mqMobile.matches ? 0.35 : 0.2);
+>>>>>>> cursor/ajustar-parallax-izquierdo-en-movil-5f1e
 
     const render = () => {
         if (prefersReducedMotion.matches) {
             heroLayer.style.transform = 'translate3d(0,0,0)';
+<<<<<<< HEAD
         } else {
             const speed = computeSpeed();
             heroLayer.style.transform = `translate3d(0, ${Math.round(lastScrollY * speed)}px, 0)`;
         }
+=======
+            ticking = false;
+            return;
+        }
+
+        const rect = heroLeft.getBoundingClientRect();
+        const viewportH = window.innerHeight || document.documentElement.clientHeight;
+        const scrollY = window.scrollY || window.pageYOffset;
+
+        // En móvil, usar desplazamiento directo para mayor visibilidad
+        if (mqMobile.matches) {
+            const mobileSpeed = 0.4; // más visible en móvil
+            heroLayer.style.transform = `translate3d(0, ${Math.round(scrollY * mobileSpeed)}px, 0)`;
+            ticking = false;
+            return;
+        }
+
+        // En desktop, relativo al contenedor
+        const containerTop = rect.top + scrollY;
+        const containerHeight = rect.height;
+        if ((scrollY + viewportH) <= containerTop || scrollY >= (containerTop + containerHeight)) {
+            heroLayer.style.transform = 'translate3d(0,0,0)';
+            ticking = false;
+            return;
+        }
+        const speed = computeSpeed();
+        const relative = scrollY - containerTop;
+        const maxTravel = containerHeight * 0.25;
+        const clamped = Math.max(0, Math.min(maxTravel, relative * speed));
+        heroLayer.style.transform = `translate3d(0, ${Math.round(clamped)}px, 0)`;
+
+>>>>>>> cursor/ajustar-parallax-izquierdo-en-movil-5f1e
         ticking = false;
     };
 
@@ -77,6 +118,10 @@ function initializeHeroParallax() {
     render();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', render);
+<<<<<<< HEAD
+=======
+    mqMobile.addEventListener?.('change', render);
+>>>>>>> cursor/ajustar-parallax-izquierdo-en-movil-5f1e
 }
 
 // Cargar la API de YouTube
