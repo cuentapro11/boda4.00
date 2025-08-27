@@ -67,21 +67,27 @@ function initializeHeroParallax() {
         const rect = heroLeft.getBoundingClientRect();
         const viewportH = window.innerHeight || document.documentElement.clientHeight;
         const scrollY = window.scrollY || window.pageYOffset;
+
+        // En móvil, usar desplazamiento directo para mayor visibilidad
+        if (mqMobile.matches) {
+            const mobileSpeed = 0.4; // más visible en móvil
+            heroLayer.style.transform = `translate3d(0, ${Math.round(scrollY * mobileSpeed)}px, 0)`;
+            ticking = false;
+            return;
+        }
+
+        // En desktop, relativo al contenedor
         const containerTop = rect.top + scrollY;
         const containerHeight = rect.height;
-
-        // Solo mover cuando está en viewport
         if ((scrollY + viewportH) <= containerTop || scrollY >= (containerTop + containerHeight)) {
             heroLayer.style.transform = 'translate3d(0,0,0)';
             ticking = false;
             return;
         }
-
         const speed = computeSpeed();
-        const relative = scrollY - containerTop; // cuánto hemos avanzado desde el inicio del contenedor
-        const maxTravel = containerHeight * (mqMobile.matches ? 0.4 : 0.25); // más recorrido en móvil
+        const relative = scrollY - containerTop;
+        const maxTravel = containerHeight * 0.25;
         const clamped = Math.max(0, Math.min(maxTravel, relative * speed));
-
         heroLayer.style.transform = `translate3d(0, ${Math.round(clamped)}px, 0)`;
 
         ticking = false;
